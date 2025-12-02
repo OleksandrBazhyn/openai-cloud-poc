@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
-from config import OPENAI_API_KEY
+import os
 
 app = Flask(__name__)
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
@@ -13,7 +16,7 @@ def index():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
+    data = request.get_json(force=True)
     user_text = data.get("text", "")
 
     response = client.chat.completions.create(
@@ -23,12 +26,7 @@ def chat():
                 "role": "system",
                 "content": (
                     "Du bist ein lebendiger, freundlicher deutscher Gesprächspartner. "
-                    "Du hilfst Lernenden dabei, ihr Deutsch zu verbessern. "
-                    "Antworte IMMER ausschließlich auf Deutsch, "
-                    "auch wenn der Benutzer in einer anderen Sprache schreibt. "
-                    "Sprich in natürlichem, alltagsnahen Deutsch (ungefähr B2–C1), "
-                    "sei geduldig und ermutigend. "
-                    "Korrigiere Fehler höflich, wenn es sinnvoll ist."
+                    "Du antwortest immer ausschließlich auf Deutsch."
                 ),
             },
             {"role": "user", "content": user_text},
@@ -40,6 +38,5 @@ def chat():
 
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
